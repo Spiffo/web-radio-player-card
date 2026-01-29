@@ -10,14 +10,21 @@ A custom Lovelace card for Home Assistant that allows you to play radio streams 
 - **More Info:** Long-press (or click and hold) a player to open the standard Home Assistant more-info dialog for that entity.
 
 ## Installation
+### HACS (Recommended)
+1. This card is available in the Home Assistant Community Store (HACS).
+2. Open HACS, go to the "Frontend" section, and click the "Explore & Add Repositories" button.
+3. Search for "Custom Radio Card" and add it.
+4. HACS will automatically manage the installation and add the required resource to your Lovelace configuration.
 
-1. Download `custom-radio-card.js` and place it in your Home Assistant `config/www` folder.
-2. Add the resource to your Dashboard configuration:
-   - Go to **Settings** > **Dashboards** > **3 dots (top right)** > **Resources**.
+### Manual Installation
+1. Download `custom-radio-card.js` from the latest release of this repository.
+2. Place the downloaded file in your Home Assistant `config/www` folder.
+3. Add the resource to your dashboard configuration:
+   - Go to **Settings** > **Dashboards**.
+   - Click the 3-dots menu in the top right and select **Resources**.
    - Click **Add Resource**.
-   - URL: `/local/custom-radio-card.js`
-   - Resource Type: `JavaScript Module`.
-3. Refresh your browser.
+   - Set the URL to `/local/custom-radio-card.js` and the Resource Type to `JavaScript Module`.
+4. Refresh your browser.
 
 ## Configuration
 

@@ -2,7 +2,5 @@
     "name": "Custom Radio Card",
     "content_in_root": true,
     "render_readme": true,
-    "domains": [
-        "dashboard"
-    ]
+    "filename": "custom-radio-card.js"
 }

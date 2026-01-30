@@ -137,6 +137,8 @@ class WebRadioPlayerCard extends LitElement {
     }
 }
 
+const includeDomains = ["media_player"];
+
 class WebRadioPlayerCardEditor extends LitElement {
     static get properties() {
         return {
@@ -157,6 +159,23 @@ class WebRadioPlayerCardEditor extends LitElement {
         );
     }
 
+    updateStation(index, field, value) {
+        const stations = [...(this.config.stations || [])];
+        stations[index] = { ...stations[index], [field]: value };
+        this.configChanged({ ...this.config, stations });
+    }
+
+    addStation() {
+        const stations = [...(this.config.stations || []), { name: "", url: "" }];
+        this.configChanged({ ...this.config, stations });
+    }
+
+    removeStation(index) {
+        const stations = [...(this.config.stations || [])];
+        stations.splice(index, 1);
+        this.configChanged({ ...this.config, stations });
+    }
+
     updatePlayer(index, value) {
         const media_players = [...(this.config.media_players || [])];
         media_players[index] = value;
@@ -174,23 +193,42 @@ class WebRadioPlayerCardEditor extends LitElement {
         this.configChanged({ ...this.config, media_players });
     }
 
+    static get styles() {
+        return css`
+            .row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+            input { padding: 8px; width: 100%; box-sizing: border-box; border: 1px solid var(--divider-color); background: var(--card-background-color); color: var(--primary-text-color); }
+            ha-entity-picker { width: 100%; }
+            button { cursor: pointer; padding: 8px; background: var(--primary-color); color: var(--text-primary-color); border: none; border-radius: 4px; }
+        `;
+    }
+
     render() {
         if (!this.hass || !this.config) return html``;
 
         return html`
+      <h3>Stations</h3>
+      ${(this.config.stations || []).map((s, i) => html`
+        <div class="row">
+            <input type="text" placeholder="Name" .value="${s.name || ''}" @input="${e => this.updateStation(i, 'name', e.target.value)}">
+            <input type="text" placeholder="URL" .value="${s.url || ''}" @input="${e => this.updateStation(i, 'url', e.target.value)}">
+            <button @click="${() => this.removeStation(i)}">X</button>
+        </div>
+      `)}
+      <button @click="${() => this.addStation()}">Add Station</button>
+
       <h3>Players</h3>
       ${(this.config.media_players || []).map((entity_id, i) => html`
         <div class="row">
           <ha-entity-picker
             .hass=${this.hass}
             .value=${entity_id}
-            .includeDomains=${["media_player"]}
+            .includeDomains=${includeDomains}
             @value-changed=${e => this.updatePlayer(i, e.detail.value)}
           ></ha-entity-picker>
           <button @click=${() => this.removePlayer(i)}>✕</button>
         </div>
       `)}
-      <button @click=${this.addPlayer}>Add player</button>
+      <button @click=${() => this.addPlayer()}>Add Player</button>
     `;
     }
 }

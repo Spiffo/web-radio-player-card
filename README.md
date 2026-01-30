@@ -36,7 +36,7 @@ Add the card to your dashboard view via YAML.
 |---|---|---|---|
 | `type` | string | **Required** | Must be `custom:web-radio-player-card`. |
 | `stations` | list | **Required** | A list of radio station objects. |
-| `media_players` | list | **Required** | A list of media player objects to display. |
+| `media_players` | list | **Required** | A list of media player entity IDs. |
 
 ### Finding Radio Streams
 
@@ -56,13 +56,6 @@ To find a stream URL:
 | `name` | string | The display name of the station. |
 | `url` | string | The stream URL for the radio station. |
 
-### Media Player Object
-
-| Name | Type | Description |
-|---|---|---|
-| `name` | string | The display name for the player on the card. |
-| `entity_id` | string | The Home Assistant entity ID (e.g., `media_player.kitchen`). |
-
 ### Example Configuration
 
 ```yaml
@@ -75,10 +68,8 @@ stations:
   - name: "Q-Music"
     url: "https://icecast-qmusicnl-cdp.triple-it.nl/Qmusic_nl_live_96.mp3"
 media_players:
-  - name: "Living Room"
-    entity_id: media_player.living_room_speaker
-  - name: "Office"
-    entity_id: media_player.office_google_home
+  - media_player.living_room_speaker
+  - media_player.office_google_home
 ```
 
 ## Usage

@@ -36,7 +36,7 @@ Add the card to your dashboard view via YAML.
 |---|---|---|---|
 | `type` | string | **Required** | Must be `custom:web-radio-player-card`. |
 | `stations` | list | **Required** | A list of radio station objects. |
-| `media_players` | list | **Required** | A list of objects containing `entity_id`. |
+| `media_players` | list | **Required** | A list of media player entity IDs. |
 
 ### Finding Radio Streams
 
@@ -68,8 +68,8 @@ stations:
   - name: "Q-Music"
     url: "https://icecast-qmusicnl-cdp.triple-it.nl/Qmusic_nl_live_96.mp3"
 media_players:
-  - entity_id: media_player.living_room_speaker
-  - entity_id: media_player.office_google_home
+  - media_player.living_room_speaker
+  - media_player.office_google_home
 ```
 
 ## Usage

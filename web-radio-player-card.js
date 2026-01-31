@@ -138,7 +138,7 @@ class WebRadioPlayerCard extends LitElement {
             <ha-card>
                 <h3>Stations</h3>
                 <div class="stations">${this.config.stations.map(st => html`<div class="station" draggable="true" @dragstart=${() => this.handleDragStart(st)}>${st.name}</div>`)}</div>
-                <h3>Players</h3>
+                <h3>Playas</h3>
                 <div class="players">${this.config.media_players.map(mp => {
             const stateObj = this.hass.states[mp.entity_id];
             const unavailable = !stateObj || stateObj.state === "unavailable" || stateObj.state === "unknown";
@@ -210,15 +210,56 @@ class WebRadioPlayerCardEditor extends LitElement {
 
     render() {
         if (!this.hass || !this.config) return html``;
+
         return html`
-            <h3>Stations</h3>
-            ${(this.config.stations || []).map((s, i) => html`<div class="row"><input type="text" placeholder="Name" .value="${s.name || ''}" @input="${e => this.updateStation(i, 'name', e.target.value)}"><input type="text" placeholder="URL" .value="${s.url || ''}" @input="${e => this.updateStation(i, 'url', e.target.value)}"><button @click="${() => this.removeStation(i)}">X</button></div>`)}
-            <button @click="${() => this.addStation()}">Add Station</button>
-            <h3>Players</h3>
-            ${(this.config.media_players || []).map((p, i) => html`<div class="row"><ha-entity-picker .hass="${this.hass}" .value="${p.entity_id}" .includeDomains="${includeDomains}" @value-changed="${e => this.updatePlayer(i, 'entity_id', e.detail.value)}"></ha-entity-picker><button @click="${() => this.removePlayer(i)}">X</button></div>`)}
-            <button @click="${() => this.addPlayer()}">Add Player</button>
-        `;
+        <h3>Stations</h3>
+        ${(this.config.stations || []).map(
+            (s, i) => html`
+                <div class="row">
+                    <input
+                        type="text"
+                        placeholder="Name"
+                        .value=${s.name || ""}
+                        @input=${e => this.updateStation(i, "name", e.target.value)}
+                    >
+                    <input
+                        type="text"
+                        placeholder="URL"
+                        .value=${s.url || ""}
+                        @input=${e => this.updateStation(i, "url", e.target.value)}
+                    >
+                    <button @click=${() => this.removeStation(i)}>X</button>
+                </div>
+            `
+        )}
+        <button @click=${() => this.addStation()}>Add Station</button>
+
+        <h3>Playas</h3>
+        ${(this.config.media_players || []).map(
+            (p, i) => html`
+                <div class="row">
+                    <input
+                        type="text"
+                        placeholder="Name"
+                        .value=${p.name || ""}
+                        @input=${e => this.updatePlayer(i, "name", e.target.value)}
+                    >
+                    <ha-entity-picker
+                        .hass=${this.hass}
+                        .value=${p.entity_id}
+                        .includeDomains=${includeDomains}
+                        @value-changed=${e =>
+                    this.updatePlayer(i, "entity_id", e.detail.value)
+                }
+                    ></ha-entity-picker>
+                    <button @click=${() => this.removePlayer(i)}>X</button>
+                </div>
+            `
+        )}
+        <button @click=${() => this.addPlayer()}>Add Player</button>
+    `;
     }
+
 }
 
 customElements.define("web-radio-player-card", WebRadioPlayerCard);

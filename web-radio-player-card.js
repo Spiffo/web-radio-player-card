@@ -236,7 +236,6 @@ class WebRadioPlayerCard extends LitElement {
                                 @drop=${() => this.handleDrop(mp.entity_id)}
                             >
                                 <strong>${displayName}</strong>
-                                <span class="entity-id">${mp.entity_id}</span>
                                 ${stationName
                     ? html`<span class="playing-station">${stationName}</span>`
                     : ``}

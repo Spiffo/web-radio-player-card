@@ -31,6 +31,15 @@ class WebRadioPlayerCard extends LitElement {
         this.dragOverPlayer = null;
     }
 
+    set hass(hass) {
+        this._hass = hass;
+        this.requestUpdate();
+    }
+
+    get hass() {
+        return this._hass;
+    }
+
     static get styles() {
         return css`
             ha-card { padding: 16px; }
@@ -138,7 +147,7 @@ class WebRadioPlayerCard extends LitElement {
             <ha-card>
                 <h3>Stations</h3>
                 <div class="stations">${this.config.stations.map(st => html`<div class="station" draggable="true" @dragstart=${() => this.handleDragStart(st)}>${st.name}</div>`)}</div>
-                <h3>Playas</h3>
+                <h3>Players 99</h3>
                 <div class="players">${this.config.media_players.map(mp => {
             const stateObj = this.hass.states[mp.entity_id];
             const unavailable = !stateObj || stateObj.state === "unavailable" || stateObj.state === "unknown";
@@ -234,7 +243,7 @@ class WebRadioPlayerCardEditor extends LitElement {
         )}
         <button @click=${() => this.addStation()}>Add Station</button>
 
-        <h3>Playas</h3>
+        <h3>Players 99</h3>
         ${(this.config.media_players || []).map(
             (p, i) => html`
                 <div class="row">

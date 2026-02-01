@@ -28,7 +28,7 @@ A custom Lovelace card for Home Assistant that allows you to play radio streams 
 
 ## Configuration
 
-Add the card to your dashboard view via YAML.
+Add the card to your dashboard. You can configure it using the visual editor or via YAML.
 
 ### Options
 
@@ -36,7 +36,7 @@ Add the card to your dashboard view via YAML.
 |---|---|---|---|
 | `type` | string | **Required** | Must be `custom:web-radio-player-card`. |
 | `stations` | list | **Required** | A list of radio station objects. |
-| `media_players` | list | **Required** | A list of media player entity IDs. |
+| `media_players` | list | **Required** | A list of media player objects. |
 
 ### Finding Radio Streams
 
@@ -56,20 +56,26 @@ To find a stream URL:
 | `name` | string | The display name of the station. |
 | `url` | string | The stream URL for the radio station. |
 
+### Media Player Object
+
+| Name | Type | Description |
+|---|---|---|
+| `entity_id` | string | The entity ID of the media player. |
+| `name` | string | (Optional) A custom display name for the player. |
+
 ### Example Configuration
 
 ```yaml
 type: custom:web-radio-player-card
 stations:
-  - name: "Radio 538"
-    url: "http://playerservices.streamtheworld.com/api/livestream-redirect/RADIO538.mp3"
-  - name: "Sky Radio"
-    url: "http://playerservices.streamtheworld.com/api/livestream-redirect/SKYRADIO.mp3"
-  - name: "Q-Music"
-    url: "https://icecast-qmusicnl-cdp.triple-it.nl/Qmusic_nl_live_96.mp3"
+  - name: "Willy"
+    url: https://streams.radio.dpgmedia.cloud/redirect/willy_be/mp3
+  - name: "StuBru"
+    url: https://vrt.streamabc.net/vrt-studiobrussel-aac-128-4334018
 media_players:
-  - media_player.living_room_speaker
-  - media_player.office_google_home
+  - entity_id: media_player.living_room_speaker
+    name: Living Room
+  - entity_id: media_player.office_google_home
 ```
 
 ## Usage

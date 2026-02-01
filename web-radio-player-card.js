@@ -18,7 +18,12 @@ class WebRadioPlayerCard extends LitElement {
 
     static getStubConfig() {
         return {
-            stations: [{ name: "Radio 538", url: "http://playerservices.streamtheworld.com/api/livestream-redirect/RADIO538.mp3" }],
+            stations: [
+                {
+                    name: "Willy",
+                    url: "https://streams.radio.dpgmedia.cloud/redirect/willy_be/mp3"
+                }
+            ],
             media_players: [{ entity_id: "media_player.living_room" }]
         };
     }
@@ -53,35 +58,54 @@ class WebRadioPlayerCard extends LitElement {
                 white-space: nowrap;
                 user-select: none;
             }
-            .station:hover, .player:hover { background: var(--primary-color); color: var(--text-primary-color); }
+            .station:hover, .player:hover {
+                background: var(--primary-color);
+                color: var(--text-primary-color);
+            }
             .player.unavailable { opacity: 0.4; cursor: not-allowed; }
             .player.dragover { background: var(--primary-color); color: var(--text-primary-color); }
-            .playing-station { display: block; color: var(--text-primary-color); font-size: 0.85em; margin-top: 2px; }
-            /* .controls { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; min-height: 48px; }
-            input[type="range"] { width: 150px; accent-color: var(--primary-color); }
-            .percent-label { width: 40px; text-align: center; font-size: 0.9em; }
-            .icon-btn {
-                background: var(--secondary-background-color);
-                border-radius: 50%;
-                width: 36px; height: 36px;
-                display: flex; align-items: center; justify-content: center;
-                cursor: pointer;
-            }
-            .icon-btn:hover { background: var(--primary-color); color: var(--text-primary-color); } */
+            .playing-station { display: block; font-size: 0.85em; margin-top: 2px; }
+            .entity-id { display: block; font-size: 0.75em; opacity: 0.7; }
         `;
     }
 
     setConfig(config) {
-        if (!config.stations || !config.media_players) throw new Error("You must define stations[] and media_players[] in card config");
+        if (!config.stations || !config.media_players) {
+            throw new Error("You must define stations[] and media_players[] in card config");
+        }
+        if (config.media_players.some(mp => !mp.entity_id)) {
+            throw new Error("Each media_player must have an entity_id");
+        }
         this.config = config;
     }
 
-    loadConnections() { try { return JSON.parse(localStorage.getItem("webRadioPlayerCardConnections")) || {}; } catch (e) { return {}; } }
-    saveConnections() { localStorage.setItem("webRadioPlayerCardConnections", JSON.stringify(this.connections)); }
+    loadConnections() {
+        try {
+            return JSON.parse(localStorage.getItem("webRadioPlayerCardConnections")) || {};
+        } catch (e) {
+            return {};
+        }
+    }
 
-    handleDragStart(station) { this.draggingStation = station; }
-    handleDragOver(ev, entityId) { ev.preventDefault(); this.dragOverPlayer = entityId; this.requestUpdate(); }
-    handleDragLeave() { this.dragOverPlayer = null; this.requestUpdate(); }
+    saveConnections() {
+        localStorage.setItem("webRadioPlayerCardConnections", JSON.stringify(this.connections));
+    }
+
+    handleDragStart(station) {
+        this.draggingStation = station;
+    }
+
+    handleDragOver(ev, entityId) {
+        ev.preventDefault();
+        this.dragOverPlayer = entityId;
+        this.requestUpdate();
+    }
+
+    handleDragLeave() {
+        this.dragOverPlayer = null;
+        this.requestUpdate();
+    }
+
     handleDrop(entityId) {
         this.connections[entityId] = this.draggingStation;
         this.saveConnections();
@@ -91,44 +115,59 @@ class WebRadioPlayerCard extends LitElement {
         this.startStream(entityId, this.connections[entityId].url);
     }
 
-    startStream(entityId, url) { this.hass.callService("media_player", "play_media", { entity_id: entityId, media_content_id: url, media_content_type: "music" }); }
-    setVolume(entityId, vol) { this.hass.callService("media_player", "volume_set", { entity_id: entityId, volume_level: vol }); }
-    toggleMute(entityId) { this.hass.callService("media_player", "volume_mute", { entity_id: entityId, is_volume_muted: !this.hass.states[entityId]?.attributes.is_volume_muted }); }
-    control(entityId, act) { this.hass.callService("media_player", act, { entity_id: entityId }); }
+    startStream(entityId, url) {
+        this.hass.callService("media_player", "play_media", {
+            entity_id: entityId,
+            media_content_id: url,
+            media_content_type: "music"
+        });
+    }
 
-    openSpeakerMoreInfo(entityId) { this.dispatchEvent(new CustomEvent("hass-more-info", { bubbles: true, composed: true, detail: { entityId } })); }
+    setVolume(entityId, vol) {
+        this.hass.callService("media_player", "volume_set", {
+            entity_id: entityId,
+            volume_level: vol
+        });
+    }
+
+    toggleMute(entityId) {
+        this.hass.callService("media_player", "volume_mute", {
+            entity_id: entityId,
+            is_volume_muted: !this.hass.states[entityId]?.attributes.is_volume_muted
+        });
+    }
+
+    control(entityId, act) {
+        this.hass.callService("media_player", act, { entity_id: entityId });
+    }
+
+    openSpeakerMoreInfo(entityId) {
+        this.dispatchEvent(
+            new CustomEvent("hass-more-info", {
+                bubbles: true,
+                composed: true,
+                detail: { entityId }
+            })
+        );
+    }
 
     addLongPress(el, entityId) {
-        let longPressTimer; const delay = 500;
-        el.addEventListener("touchstart", () => longPressTimer = setTimeout(() => this.openSpeakerMoreInfo(entityId), delay));
+        let longPressTimer;
+        const delay = 500;
+
+        el.addEventListener("touchstart", () => {
+            longPressTimer = setTimeout(() => this.openSpeakerMoreInfo(entityId), delay);
+        });
         el.addEventListener("touchend", () => clearTimeout(longPressTimer));
-        el.addEventListener("mousedown", e => { if (e.button === 0) longPressTimer = setTimeout(() => this.openSpeakerMoreInfo(entityId), delay); });
+
+        el.addEventListener("mousedown", e => {
+            if (e.button === 0) {
+                longPressTimer = setTimeout(() => this.openSpeakerMoreInfo(entityId), delay);
+            }
+        });
         el.addEventListener("mouseup", () => clearTimeout(longPressTimer));
         el.addEventListener("mouseleave", () => clearTimeout(longPressTimer));
     }
-
-    /* renderControls() {
-        if (!this.selectedPlayer) return html`<div class="controls"></div>`;
-        const stateObj = this.hass.states[this.selectedPlayer];
-        if (!stateObj) return html`<div class="controls"></div>`;
-        const connectedStation = this.connections[this.selectedPlayer];
-        const state = stateObj.state;
-        if (!connectedStation || (state !== "playing" && state !== "paused")) return html`<div class="controls"></div>`;
-        const vol = (stateObj.attributes.volume_level ?? 0) * 100;
-        const renderStateButtons = () => {
-            if (state === "playing") return html`<div class="icon-btn" @click=${() => this.control(this.selectedPlayer, "media_pause")}><ha-icon icon="mdi:pause"></ha-icon></div><div class="icon-btn" @click=${() => this.control(this.selectedPlayer, "media_stop")}><ha-icon icon="mdi:stop"></ha-icon></div>`;
-            if (state === "paused") return html`<div class="icon-btn" @click=${() => this.control(this.selectedPlayer, "media_play")}><ha-icon icon="mdi:play"></ha-icon></div><div class="icon-btn" @click=${() => this.control(this.selectedPlayer, "media_stop")}><ha-icon icon="mdi:stop"></ha-icon></div>`;
-            return html``;
-        };
-        return html`
-            <div class="controls">
-                <input type="range" min="0" max="50" step="5" .value=${vol} @input=${e => this.setVolume(this.selectedPlayer, e.target.value / 100)}>
-                <div class="percent-label">${Math.round(vol)}%</div>
-                <div class="icon-btn" @click=${() => this.toggleMute(this.selectedPlayer)}><ha-icon icon="mdi:volume-off"></ha-icon></div>
-                ${renderStateButtons()}
-            </div>
-        `;
-    } */
 
     firstUpdated() {
         this.updateComplete.then(() => {
@@ -146,32 +185,87 @@ class WebRadioPlayerCard extends LitElement {
         return html`
             <ha-card>
                 <h3>Stations</h3>
-                <div class="stations">${this.config.stations.map(st => html`<div class="station" draggable="true" @dragstart=${() => this.handleDragStart(st)}>${st.name}</div>`)}</div>
-                <h3>Players 99</h3>
-                <div class="players">${this.config.media_players.map(mp => {
+                <div class="stations">
+                    ${this.config.stations.map(
+            st => html`
+                            <div
+                                class="station"
+                                draggable="true"
+                                @dragstart=${() => this.handleDragStart(st)}
+                            >
+                                ${st.name}
+                            </div>
+                        `
+        )}
+                </div>
+
+                <h3>Players</h3>
+                <div class="players">
+                    ${this.config.media_players.map(mp => {
             const stateObj = this.hass.states[mp.entity_id];
-            const unavailable = !stateObj || stateObj.state === "unavailable" || stateObj.state === "unknown";
-            const stationName = (stateObj?.state === "playing" || stateObj?.state === "paused") ? this.connections[mp.entity_id]?.name : null;
-            const classes = unavailable ? "player unavailable" : this.dragOverPlayer === mp.entity_id ? "player dragover" : "player";
-            return html`<div class="${classes}" id="${mp.entity_id}" @click=${() => { if (!unavailable) this.selectedPlayer = mp.entity_id; }} @dragover=${e => this.handleDragOver(e, mp.entity_id)} @dragleave=${() => this.handleDragLeave()} @drop=${() => this.handleDrop(mp.entity_id)}><strong>${stateObj?.attributes?.friendly_name || mp.entity_id}</strong>${stationName ? html`<span class="playing-station">${stationName}</span>` : ``}</div>`;
-        })}</div>
-                <!-- ${/* this.renderControls() */''} -->
+            const unavailable =
+                !stateObj ||
+                stateObj.state === "unavailable" ||
+                stateObj.state === "unknown";
+
+            const stationName =
+                stateObj?.state === "playing" || stateObj?.state === "paused"
+                    ? this.connections[mp.entity_id]?.name
+                    : null;
+
+            const classes = unavailable
+                ? "player unavailable"
+                : this.dragOverPlayer === mp.entity_id
+                    ? "player dragover"
+                    : "player";
+
+            const displayName =
+                (mp.name && mp.name.trim()) ||
+                stateObj?.attributes?.friendly_name ||
+                mp.entity_id;
+
+            return html`
+                            <div
+                                class="${classes}"
+                                id="${mp.entity_id}"
+                                @click=${() => {
+                    if (!unavailable) this.selectedPlayer = mp.entity_id;
+                }}
+                                @dragover=${e => this.handleDragOver(e, mp.entity_id)}
+                                @dragleave=${() => this.handleDragLeave()}
+                                @drop=${() => this.handleDrop(mp.entity_id)}
+                            >
+                                <strong>${displayName}</strong>
+                                <span class="entity-id">${mp.entity_id}</span>
+                                ${stationName
+                    ? html`<span class="playing-station">${stationName}</span>`
+                    : ``}
+                            </div>
+                        `;
+        })}
+                </div>
             </ha-card>
         `;
     }
 }
-
-const includeDomains = ["media_player"];
 
 class WebRadioPlayerCardEditor extends LitElement {
     static get properties() {
         return { hass: {}, config: {} };
     }
 
-    setConfig(config) { this.config = config; }
+    setConfig(config) {
+        this.config = config;
+    }
 
     configChanged(newConfig) {
-        this.dispatchEvent(new CustomEvent("config-changed", { detail: { config: newConfig }, bubbles: true, composed: true }));
+        this.dispatchEvent(
+            new CustomEvent("config-changed", {
+                detail: { config: newConfig },
+                bubbles: true,
+                composed: true
+            })
+        );
     }
 
     updateStation(index, field, value) {
@@ -198,7 +292,7 @@ class WebRadioPlayerCardEditor extends LitElement {
     }
 
     addPlayer() {
-        const media_players = [...(this.config.media_players || []), { entity_id: "" }];
+        const media_players = [...(this.config.media_players || []), { entity_id: "", name: "" }];
         this.configChanged({ ...this.config, media_players });
     }
 
@@ -210,10 +304,28 @@ class WebRadioPlayerCardEditor extends LitElement {
 
     static get styles() {
         return css`
-            .row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-            input { padding: 8px; width: 100%; box-sizing: border-box; border: 1px solid var(--divider-color); background: var(--card-background-color); color: var(--primary-text-color); }
-            ha-entity-picker { width: 100%; }
-            button { cursor: pointer; padding: 8px; background: var(--primary-color); color: var(--text-primary-color); border: none; border-radius: 4px; }
+            .row {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-bottom: 8px;
+            }
+            input {
+                padding: 8px;
+                width: 100%;
+                box-sizing: border-box;
+                border: 1px solid var(--divider-color);
+                background: var(--card-background-color);
+                color: var(--primary-text-color);
+            }
+            button {
+                cursor: pointer;
+                padding: 8px;
+                background: var(--primary-color);
+                color: var(--text-primary-color);
+                border: none;
+                border-radius: 4px;
+            }
         `;
     }
 
@@ -221,54 +333,54 @@ class WebRadioPlayerCardEditor extends LitElement {
         if (!this.hass || !this.config) return html``;
 
         return html`
-        <h3>Stations</h3>
-        ${(this.config.stations || []).map(
+            <h3>Stations</h3>
+            ${(this.config.stations || []).map(
             (s, i) => html`
-                <div class="row">
-                    <input
-                        type="text"
-                        placeholder="Name"
-                        .value=${s.name || ""}
-                        @input=${e => this.updateStation(i, "name", e.target.value)}
-                    >
-                    <input
-                        type="text"
-                        placeholder="URL"
-                        .value=${s.url || ""}
-                        @input=${e => this.updateStation(i, "url", e.target.value)}
-                    >
-                    <button @click=${() => this.removeStation(i)}>X</button>
-                </div>
-            `
+                    <div class="row">
+                        <input
+                            type="text"
+                            placeholder="Name"
+                            .value=${s.name || ""}
+                            @input=${e => this.updateStation(i, "name", e.target.value)}
+                        >
+                        <input
+                            type="text"
+                            placeholder="URL"
+                            .value=${s.url || ""}
+                            @input=${e => this.updateStation(i, "url", e.target.value)}
+                        >
+                        <button @click=${() => this.removeStation(i)}>X</button>
+                    </div>
+                `
         )}
-        <button @click=${() => this.addStation()}>Add Station</button>
+            <button @click=${() => this.addStation()}>Add Station</button>
 
-        <h3>Players 99</h3>
-        ${(this.config.media_players || []).map(
+            <h3>Players</h3>
+            ${(this.config.media_players || []).map(
             (p, i) => html`
-                <div class="row">
-                    <input
-                        type="text"
-                        placeholder="Name"
-                        .value=${p.name || ""}
-                        @input=${e => this.updatePlayer(i, "name", e.target.value)}
-                    >
-                    <ha-entity-picker
-                        .hass=${this.hass}
-                        .value=${p.entity_id}
-                        .includeDomains=${includeDomains}
-                        @value-changed=${e =>
-                    this.updatePlayer(i, "entity_id", e.detail.value)
-                }
-                    ></ha-entity-picker>
-                    <button @click=${() => this.removePlayer(i)}>X</button>
-                </div>
-            `
-        )}
-        <button @click=${() => this.addPlayer()}>Add Player</button>
-    `;
-    }
+                    <div class="row">
+                        <input
+                            type="text"
+                            placeholder="Display name (optional)"
+                            .value=${p.name || ""}
+                            @input=${e => this.updatePlayer(i, "name", e.target.value)}
+                        >
 
+                        <input
+                            type="text"
+                            placeholder="media_player.your_device"
+                            .value=${p.entity_id || ""}
+                            required
+                            @input=${e => this.updatePlayer(i, "entity_id", e.target.value)}
+                        >
+
+                        <button @click=${() => this.removePlayer(i)}>X</button>
+                    </div>
+                `
+        )}
+            <button @click=${() => this.addPlayer()}>Add Player</button>
+        `;
+    }
 }
 
 customElements.define("web-radio-player-card", WebRadioPlayerCard);

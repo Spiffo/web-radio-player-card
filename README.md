@@ -74,7 +74,7 @@ stations:
     url: https://vrt.streamabc.net/vrt-studiobrussel-aac-128-4334018
 media_players:
   - entity_id: media_player.living_room_speaker
-    name: Living Room
+    name: "Living Room"
   - entity_id: media_player.office_google_home
 ```
 

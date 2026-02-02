@@ -248,6 +248,7 @@ class WebRadioPlayerCard extends LitElement {
     }
 }
 
+
 class WebRadioPlayerCardEditor extends LitElement {
     static get properties() {
         return { hass: {}, config: {} };
